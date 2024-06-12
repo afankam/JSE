@@ -1,0 +1,12 @@
+# check /var/log/Xorg.0.log for any errors related to NVidia driver and gnome.
+# look (EE) related to "Nvidia graphics device PCI:XXX:X:X bound to this Base Mosaic X screen is not...add 'BusID "PCI:XXX:X:X" to the Base Mosaic "Devide section in X configuration file.
+# Add to X configuration accoding to log (EE) messages in /etc/X11/xorg.conf
+  in /etc/X11/xorg.conf add the line below under the DEVICE SECTION
+  BusID "PCI:XXX:X:X  
+
+# Reload system-unit-configuration files
+  systemctl daemon-reload
+# Restart gdm.service 
+  systemctl restart gdm.service
+
+This should resolve the issue!
