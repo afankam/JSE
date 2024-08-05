@@ -1,0 +1,27 @@
+1.	Install Physical Disk 
+2.	CMD: lsblk to confirm the Operating System can see the drive and get the mapping (/dev/sd?)
+3.	CMD: cryptsetup luksFormat /dev/sd?
+a.	Type YES in all caps to confirm
+b.	Enter passphrase
+4.	CMD: cryptsetup luksUUID /dev/sd?
+a.	The UUID output of this command will be used moving forward
+5.	CMD: cryptsetup luksOpen /dev/sd? Luks-(use the UUID from previous command to name the disk)
+6.	CMD: pvcreate /dev/mapper/luks-(UUID used in the previous command)
+7.	CMD: vgcreate datavg /dev/mapper/luks-(UUID used in previous command)
+8.	CMD: lvcreate –l 100%FREE –n datalv datavg
+a.	Name of logical volume: datalv and name of Volume group: datavg
+9.	CMD: mkfs –t xfs /dev/mapper/datavg-datalv
+10.	Vim /etc/fstab
+11.	Add entry: /dev/mapper/datavg-datalv /data xfs defaults, x-systemd.devicetimeout=0 0 0
+12.	CMD: dd if=/dev/urandom of=/root/.keyfile bs=1024 count=4
+a.	This creates a random hidden file that will be used to unlock the drive
+b.	If more drives are added may need new keyfiles for each but with different names
+13.	CMD: chmod 0400 /root/.keyfile
+14.	CMD: cryptsetup luksAddKey /dev/sd? /root/.keyfile
+a.	This command adds the .keyfile as the luks key for the drive
+15.	CMD: blkid /dev/sd? >> /etc/crypttab
+a.	This sends the info for the device to the crypttab without overwriting existing data
+16.	Vim /etc/crypttab
+17.	EDIT: Line 2, or the line at the bottom, this is most recently added
+a.	Edit: luks-(UUID without the quotation marks) UUID=(UUID again without quotation marks) /root/.keyfile luks,discard
+b.	This points to the hidden keyfile on root to decrypt the drive after restarting
